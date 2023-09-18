@@ -1,61 +1,48 @@
-﻿#include <stdio.h>
-#include <windows.h>
+﻿#include<stdio.h>
+#include<windows.h>
 
 int main(int argc, char* argv[])
 {
-    DWORD dwExitCode = 0, dwRet = 0;
-    HANDLE hProc[2];
     STARTUPINFO si;
+    // 이전 프로세스 정보를 저장하는 구조체
     PROCESS_INFORMATION pi;
+    HANDLE hProc;
+    DWORD exit = 0, ret = 0;
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
 
-    //  Child Process 실행
     TCHAR command[] = TEXT("notepad 1");
-    if (!CreateProcess(NULL, command, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-    {
-        printf("fail to execute process \n");
-        return-1;
+
+    // 프로세스 생성
+    if (!CreateProcess(NULL, command, NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
+        printf("fail create process\n");
+        return -1;
     }
 
-    if (GetExitCodeProcess(pi.hProcess, &dwExitCode))
-    {
-        //   process가 살아 있는 경우, dwExitCode의 값은 STILL_ACTIVE 입니다.
-
-        if (dwExitCode == STILL_ACTIVE)
+    // 종료했는지 확인
+    if (GetExitCodeProcess(pi.hProcess, &exit)) {
+        if (exit == STILL_ACTIVE)
             printf("process is alive\n");
         else
-            printf("exit status(code) : %d\n", dwExitCode);
+            printf("exit status(code) : %d\n", exit);
     }
-    else
-    {
+    else {
         printf("errcode : %d\n", GetLastError());
     }
 
-    hProc[0] = pi.hProcess;
-    dwRet = WaitForMultipleObjects(1, hProc, FALSE, INFINITE);
+    hProc = pi.hProcess;
+    ret = WaitForSingleObject(hProc, INFINITE);
 
-    //  WaitForMultipleObjects()의 반환값은 시그널된 객체(Process, Thread)의 ID 값이며,
-    // 다음과 같은 형태로 어느 객체가 시그널 되어 있는지 확인이 가능합니다.
-
-    if (dwRet == WAIT_OBJECT_0 + 0)
-    {
-
-        // 자~~ 이제 Child Process가 종료시에 반환한 값을 확인 !!
-
-        if (GetExitCodeProcess(*(hProc + 0), &dwExitCode))
-        {
-            printf("exit status(code) : %d\n", dwExitCode);
-        }
+    if (ret == WAIT_OBJECT_0) {
+        if (GetExitCodeProcess(hProc, &exit))
+            printf("exit status(code) : %d\n", exit);
         else
-        {
             printf("errcode : %d\n", GetLastError());
-        }
     }
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
+
     return 0;
 }
