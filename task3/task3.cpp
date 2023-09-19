@@ -2,19 +2,21 @@
 #include <thread>
 #include <chrono>
 
-int main()
-{
-	std::chrono::high_resolution_clock::time_point t1, t2;
-	std::chrono::duration<double> time_span;
-	for (int i = 0; i < 100; ++i) {
-		t1 = std::chrono::high_resolution_clock::now();
+int main() {
+    const int num = 100;
+    long long total = 0;
 
-		std::this_thread::yield();
+    for (int i = 0; i < num; ++i) {
+        auto start = std::chrono::high_resolution_clock::now();
+        std::this_thread::yield();
+        auto end = std::chrono::high_resolution_clock::now();
 
-		t2 = std::chrono::high_resolution_clock::now();
-		 += std::chrono::duration_cast<std::chrono::duration<double>> (t2 - t1);
-	}
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        total += elapsed_time;
+    }
 
+    double average_time = static_cast<double>(total) / num;
+    std::cout << "평균 실행 시간: " << average_time << " nsec" << std::endl;
 
-	std::cout << time_span.count() << std::endl;
+    return 0;
 }

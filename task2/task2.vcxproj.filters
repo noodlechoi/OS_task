@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="task2.cpp">
+    <ClCompile Include="2022180039최미나_task2.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
