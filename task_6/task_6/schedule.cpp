@@ -147,12 +147,7 @@ auto try_alloc_NextFit(list <FREE_NODE>& free_list, int size, list <FREE_NODE>::
 	for (auto i = next; i != free_list.end();) {
 		if (i->size >= size) {
 			int start_address = i->start_address;
-			if (i->size == size)
-				free_list.erase(i);
-			else { // i->size > size 
-				i->size = i->size - size;
-				i->start_address = i->start_address + size;
-			}
+			
 			return i;
 		}
 		++i;
@@ -487,6 +482,13 @@ void NextFit()
 				allocated = free_list.begin();
 				break;
 			}
+			// 삭제
+			if (allocated->size == req.size)
+				free_list.erase(allocated);
+			else {
+				allocated->size = allocated->size - req.size;
+				allocated->start_address = allocated->start_address + req.size;
+			}
 			total_wait_time += clock - req.arrive_time;
 			alloc_list.push_back(ALLOCATED_MEMORY{ clock, allocated->start_address, req.size, clock + req.use_time, req.arrive_time });
 			request_queue.pop();
@@ -514,6 +516,7 @@ int main()
 	FirstFit();
 	WorstFit();
 	BestFit();
+	// 오류 발생
 	//NextFit();
 	Buddy();
 }
