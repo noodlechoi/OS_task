@@ -141,6 +141,25 @@ auto try_alloc_WorstFit(list <FREE_NODE>& free_list, int size)
 	else return free_list.end();
 }
 
+// next fit
+auto try_alloc_NextFit(list <FREE_NODE>& free_list, int size, list <FREE_NODE>::iterator& next)
+{
+	for (auto i = next; i != free_list.end();) {
+		if (i->size >= size) {
+			int start_address = i->start_address;
+			if (i->size == size)
+				free_list.erase(i);
+			else { // i->size > size 
+				i->size = i->size - size;
+				i->start_address = i->start_address + size;
+			}
+			return i;
+		}
+		++i;
+	}
+	return free_list.end();
+}
+
 void Return_Memory(list <FREE_NODE>& free_list, int address, int size)
 {
 	auto i = free_list.begin();
@@ -302,8 +321,8 @@ void BestFit()
 			// free list 찾기
 			auto best_fit_block = try_alloc_BestFit(free_list, req.size);
 
-			// 할당된 블록을 나머지 부분 free list에 추가
-			if (best_fit_block != free_list.end()) {
+			// 할당된 블록 나머지 부분 free list에 추가
+			if (free_list.end() != best_fit_block) {
 				int start_address = best_fit_block->start_address;
 				int block_size = best_fit_block->size;
 
@@ -376,14 +395,14 @@ void WorstFit()
 		if ((true == input_end) && (request_queue.size() == 0) && (alloc_list.empty() == true))
 			break;
 
-		// 요청 큐 검사, 메모리 할당 가능여부 검사	(Best Fit 알고리즘)
+		// 요청 큐 검사, 메모리 할당 가능여부 검사	(Worst Fit 알고리즘)
 		while (request_queue.empty() == false) {
 			auto& req = request_queue.front();
 			// free list 찾기
 			auto worst_fit_block = try_alloc_WorstFit(free_list, req.size);
 
 			// 할당된 블록을 나머지 부분 free list에 추가
-			if (worst_fit_block != free_list.end()) {
+			if (free_list.end() != worst_fit_block) {
 				int start_address = worst_fit_block->start_address;
 				int block_size = worst_fit_block->size;
 
@@ -416,12 +435,76 @@ void WorstFit()
 
 void NextFit()
 {
-	
+	// first fit에서 지난번 위치를 저장 후 그 다음부터 찾도록 변경
+	list <FREE_NODE> free_list;
+	list <ALLOCATED_MEMORY> alloc_list;
+	free_list.push_back(FREE_NODE{ 0, MEMORY_SIZE });
+	queue <UNALLOCATED_REQUEST> request_queue;
+	bool input_end = false;
+	int clock = 0;
+	int num_of_requests = 0;
+	int total_return_time = 0;
+	int total_wait_time = 0;
+	int total_request_size = 0;
+	long long total_request_timespace = 0;
+	MEMORY_REQUEST mr;
+
+	// 첫 번째 위치 저장
+	auto allocated = free_list.begin();
+
+	for (;; ++clock) {
+		// 사용시간 끝난 메모리 반환
+		for (auto it = alloc_list.begin(); it != alloc_list.end();)
+			if (it->end_time > clock)
+				it++;
+			else {
+				Return_Memory(free_list, it->start_address, it->size);
+				total_return_time += clock - it->arrive_time;
+				it = alloc_list.erase(it);
+			}
+
+		int req_size;
+		int use_time;
+		// 새로운 메모리 요청 받기
+		if (false == input_end)
+			while (true == mr.GetMemoryRequest(clock, &req_size, &use_time, &input_end)) {
+				request_queue.push(UNALLOCATED_REQUEST{ clock, req_size, use_time });
+				num_of_requests++;
+				total_request_size += req_size;
+				total_request_timespace += req_size * use_time;
+			}
+
+		// 종료 조건 검사
+		if ((true == input_end) && (request_queue.size() == 0) && (alloc_list.empty() == true))
+			break;
+
+		// 요청 큐 검사, 메모리 할당 가능여부 검사
+		while (request_queue.empty() == false) {
+			auto& req = request_queue.front();
+			allocated = try_alloc_NextFit(free_list, req.size, allocated);
+			if (free_list.end() == allocated) {
+				// 다시 처음으로
+				allocated = free_list.begin();
+				break;
+			}
+			total_wait_time += clock - req.arrive_time;
+			alloc_list.push_back(ALLOCATED_MEMORY{ clock, allocated->start_address, req.size, clock + req.use_time, req.arrive_time });
+			request_queue.pop();
+		}
+	}
+
+	cout << "Scheduling Algorithm : NextFit\n";
+	cout << "Memory Size = " << MEMORY_SIZE << endl;
+	cout << "Number of Memory Requests = " << num_of_requests << endl;
+	cout << "Total size of memory reqeusted = " << total_request_size << endl;
+	wcout << L"전체 종료 시간 = " << clock << endl;
+	wcout << L"평균 대기 시간 = " << total_wait_time / num_of_requests << endl;
 }
+
 
 void Buddy()
 {
-
+	
 }
 
 
@@ -431,6 +514,6 @@ int main()
 	FirstFit();
 	WorstFit();
 	BestFit();
-	NextFit();
+	//NextFit();
 	Buddy();
 }
