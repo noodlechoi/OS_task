@@ -75,6 +75,7 @@ struct FREE_NODE {
 	int start_address;
 	int size;
 };
+
 int try_alloc_FirstFit(list <FREE_NODE>& free_list, int size)
 {
 	for (auto i = free_list.begin(); i != free_list.end();) {
@@ -91,6 +92,30 @@ int try_alloc_FirstFit(list <FREE_NODE>& free_list, int size)
 		++i;
 	}
 	return -1;
+}
+
+// best fit 블록 찾기
+auto try_alloc_BestFit(list <FREE_NODE>& free_list, int size)
+{
+	int min = MEMORY_SIZE + 1;
+	auto best_fit_block = free_list.end();
+
+	for (auto i = free_list.begin(); i != free_list.end();) {
+		// 요구한 것보다는 커야함
+		if (i->size >= size) {
+			int diff = i->size - size;
+			// 가장 작은 거 찾기
+			if (diff < min) {
+				min = diff;
+				best_fit_block = i;
+			}
+		}
+		++i;
+	}
+
+	// 리턴
+	if (min != MEMORY_SIZE + 1)	return best_fit_block;
+	else return free_list.end();
 }
 
 void Return_Memory(list <FREE_NODE>& free_list, int address, int size)
@@ -248,18 +273,37 @@ void BestFit()
 		if ((true == input_end) && (request_queue.size() == 0) && (alloc_list.empty() == true))
 			break;
 
-		// 요청 큐 검사, 메모리 할당 가능여부 검사
+		// 요청 큐 검사, 메모리 할당 가능여부 검사	(Best Fit 알고리즘)
 		while (request_queue.empty() == false) {
 			auto& req = request_queue.front();
-			int start_address = try_alloc_FirstFit(free_list, req.size);
-			if (-1 == start_address) break;
-			total_wait_time += clock - req.arrive_time;
-			alloc_list.push_back(ALLOCATED_MEMORY{ clock, start_address, req.size, clock + req.use_time, req.arrive_time });
-			request_queue.pop();
+			// free list 찾기
+			auto best_fit_block = try_alloc_BestFit(free_list, req.size);
+			if (free_list.end() == best_fit_block) break;
+
+			// 할당된 블록을 나머지 부분 free list에 추가
+			if (best_fit_block != free_list.end()) {
+				int start_address = best_fit_block->start_address;
+				int block_size = best_fit_block->size;
+
+				if (block_size == req.size)
+					free_list.erase(best_fit_block);
+				else {
+					best_fit_block->size = block_size - req.size;
+					best_fit_block->start_address = start_address + req.size;
+				}
+
+				// 시간 계산
+				total_wait_time += clock - req.arrive_time;
+				alloc_list.push_back(ALLOCATED_MEMORY{ clock, start_address, req.size, clock + req.use_time, req.arrive_time });
+				request_queue.pop();
+			}
+			// 할당 가능한 블록 못 찾으면 종료
+			else break;
+
 		}
 	}
 
-	cout << "Scheduling Algorithm : FirstFit\n";
+	cout << "Scheduling Algorithm : BestFit\n";
 	cout << "Memory Size = " << MEMORY_SIZE << endl;
 	cout << "Number of Memory Requests = " << num_of_requests << endl;
 	cout << "Total size of memory reqeusted = " << total_request_size << endl;	
