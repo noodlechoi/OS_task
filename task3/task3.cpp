@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 #include <thread>
 #include <chrono>
 
@@ -8,7 +8,7 @@ int main() {
 
     for (int i = 0; i < num; ++i) {
         auto start = std::chrono::high_resolution_clock::now();
-        std::this_thread::yield();
+        printf("Hello World.\n");
         auto end = std::chrono::high_resolution_clock::now();
 
         auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -16,7 +16,7 @@ int main() {
     }
 
     double average_time = static_cast<double>(total) / num;
-    std::cout << "평균 실행 시간: " << average_time << " nsec" << std::endl;
+    printf("평균 실행 시간: %.1lf nsec\n", average_time);
 
     return 0;
 }

@@ -39,9 +39,9 @@ int main(int argc, char* argv[])
 
         if (ret == WAIT_OBJECT_0) {
             if (GetExitCodeProcess(hProc[0], &exit))
-                std::cout << "exit status(code) : " << exit << std::endl;
+                std::cout << "exit code : " << exit << std::endl;
             else
-                std::cout << "errcode : " << exit << std::endl;
+                std::cout << "error code : " << exit << std::endl;
             break;
         }
     }
