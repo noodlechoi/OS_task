@@ -86,7 +86,10 @@ int current_time;
 void FIFO()
 {
 	int current_time = 0;
-	queue <PCB*> ready_queue;
+	//queue <PCB*> ready_queue;
+	// CPU queue
+	queue <PCB*> CPU[NumberOfCPU];
+	int idx = 0;
 	PCB* current_process = nullptr;
 	int total_return_time = 0;
 	int total_process = 0;
@@ -102,7 +105,8 @@ void FIFO()
 		// 현재 시간에 도착한 프로세스들을 큐에 추가
 		while (true == p_in.GetProcess(current_time, &length, &end_of_schedule))
 		{
-			ready_queue.push(new PCB{ pid++, current_time, length, 0 });
+			CPU[idx % NumberOfCPU].push(new PCB{pid++, current_time, length, 0});
+			idx++;
 		}
 
 		// 현재 실행 중인 프로세스가 완료되었을 경우 처리
@@ -119,17 +123,26 @@ void FIFO()
 		// 만약 현재 실행 중인 프로세스가 없고, 준비 큐가 비어있지 않다면, 새로운 프로세스를 실행 대기 상태
 		if (nullptr == current_process)
 		{
-			if (false == ready_queue.empty())
-			{
-				current_process = ready_queue.front();
-				ready_queue.pop();
-				if (0 == current_process->executed_Length)
-					total_response_time += current_time - current_process->arrive_time;
+			for (int i = 0; i < NumberOfCPU; ++i) {
+				if (false == CPU[i].empty())
+				{
+					current_process = CPU[i].front();
+					CPU[i].pop();
+					if (0 == current_process->executed_Length)
+						total_response_time += current_time - current_process->arrive_time;
+				}
+
 			}
 		}
 
 		// 스케줄링이 종료되었을 경우 반복문을 탈출
-		if ((true == end_of_schedule) && ready_queue.empty() && (nullptr == current_process))  break;
+		if ((true == end_of_schedule) && (nullptr == current_process)) {
+			for (int i = 0; i < 4; ++i) {
+				if (!CPU[i].empty())	end_of_schedule = false;
+			}
+			if (true == end_of_schedule)
+				break;
+		}
 
 		if (nullptr != current_process) {
 			current_process->executed_Length++;
