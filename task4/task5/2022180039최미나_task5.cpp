@@ -138,7 +138,7 @@ void FIFO()
 
 	// 출력
 	cout << "\n\n===  Scheduling Algorithm : FIFO  ===\n";
-	cout << "Number of CPU = " << 1 << endl;
+	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
 	cout << "Average Return Time = " << total_return_time / total_process << endl;
@@ -201,7 +201,7 @@ void SJF()	// 가장 짧은 것 부터
 	}
 
 	cout << "\n\n===  스케줄링 알고리즘 : SJF (Shortest Job First)  ===\n";
-	cout << "Number of CPU = " << 1 << endl;
+	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
 	cout << "Average Return Time = " << total_return_time / total_process << endl;
@@ -272,7 +272,7 @@ void STCF()	// SJF, 잔여시간을 조사하여 가장 작은 작업 스케쥴, 중간에 작업이 중�
 	}
 
 	cout << "\n\n===  스케줄링 알고리즘 : STCF  ===\n";
-	cout << "Number of CPU = " << 1 << endl;
+	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
 	cout << "Average Return Time = " << total_return_time / total_process << endl;
@@ -343,7 +343,7 @@ void RR()	// timeslice = 2의 시간이 지나면 다음 작업으로 문맥 교환
 
 	// 출력
 	cout << "\n\n===  Scheduling Algorithm : RR  ===\n";
-	cout << "Number of CPU = " << 1 << endl;
+	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
 	cout << "Average Return Time = " << total_return_time / total_process << endl;
