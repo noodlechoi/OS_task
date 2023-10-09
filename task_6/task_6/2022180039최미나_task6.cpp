@@ -477,21 +477,27 @@ void NextFit()
 		while (request_queue.empty() == false) {
 			auto& req = request_queue.front();
 			allocated = try_alloc_NextFit(free_list, req.size, allocated);
-			if (free_list.end() == allocated) {
+			if (free_list.end() != allocated) {
+				int start_address = allocated->start_address;
+				int block_size = allocated->size;
+
+				if (block_size == req.size)
+					free_list.erase(allocated);
+				else {
+					allocated->size = block_size - req.size;
+					allocated->start_address = start_address + req.size;
+				}
+
+				// 시간 계산
+				total_wait_time += clock - req.arrive_time;
+				alloc_list.push_back(ALLOCATED_MEMORY{ clock, start_address, req.size, clock + req.use_time, req.arrive_time });
+				request_queue.pop();
+			}
+			else {
 				// 다시 처음으로
 				allocated = free_list.begin();
 				break;
 			}
-			// 삭제
-			if (allocated->size == req.size)
-				free_list.erase(allocated);
-			else {
-				allocated->size = allocated->size - req.size;
-				allocated->start_address = allocated->start_address + req.size;
-			}
-			total_wait_time += clock - req.arrive_time;
-			alloc_list.push_back(ALLOCATED_MEMORY{ clock, allocated->start_address, req.size, clock + req.use_time, req.arrive_time });
-			request_queue.pop();
 		}
 	}
 
@@ -517,6 +523,6 @@ int main()
 	WorstFit();
 	BestFit();
 	// 오류 발생
-	//NextFit();
+	NextFit();
 	Buddy();
 }
