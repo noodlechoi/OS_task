@@ -225,7 +225,7 @@ void SJF()	// 가장 짧은 것 부터
 		}
 	}
 
-	cout << "\n\n===  스케줄링 알고리즘 : SJF (Shortest Job First)  ===\n";
+	cout << "\n\n===  Scheduling Algorithm : SJF (Shortest Job First)  ===\n";
 	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
@@ -309,7 +309,7 @@ void STCF()	// SJF, 잔여시간을 조사하여 가장 작은 작업 스케쥴, 중간에 작업이 중�
 		}
 	}
 
-	cout << "\n\n===  스케줄링 알고리즘 : STCF  ===\n";
+	cout << "\n\n===  Scheduling Algorithm : STCF  ===\n";
 	cout << "Number of CPU = " << NumberOfCPU << endl;
 	cout << "Total Execution Time = " << current_time << endl;
 	cout << "Number of Processes Executed = " << total_process << endl;
